@@ -1,0 +1,6 @@
+---
+# tasks file for role-install-kubernetes
+
+- name: Initialize cluster
+  ansible.builtin.include_tasks:
+    file: initialize_cluster.yml

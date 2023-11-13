@@ -1,0 +1,41 @@
+---
+
+- name: Add Docker repository
+  block:
+    - name: Docker repo | apt key
+      ansible.builtin.apt_key:
+        url: https://download.docker.com/linux/debian/gpg
+        keyring: /etc/apt/trusted.gpg.d/docker.gpg
+
+    - name: Docker repo | apt source
+      ansible.builtin.apt_repository:
+        repo: "deb [arch=amd64 signed-by=/etc/apt/trusted.gpg.d/docker.gpg] https://download.docker.com/linux/debian {{ ansible_distribution_release }} stable"
+        state: present
+        filename: docker
+
+
+- name: Install Docker components
+  ansible.builtin.apt:
+    pkg:
+      - docker-ce
+      - docker-ce-cli
+      - containerd.io
+      - docker-buildx-plugin
+    state: latest
+    update_cache: true
+
+
+- name: Install cri-dockerd .deb package from the internet
+  ansible.builtin.apt:
+    deb: "{{ cri_dockerd_url }}"
+
+
+- name: Ensure cri-dockerd use correct pause image
+  ansible.builtin.replace:
+    path: /lib/systemd/system/cri-docker.service
+    regexp: '^ExecStart='
+    replace: ExecStart=/usr/bin/cri-dockerd --container-runtime-endpoint fd:// --pod-infra-container-image registry.k8s.io/pause:3.9
+  notify:
+    - daemon reload
+    - restart cri-docker
+    - restart docker

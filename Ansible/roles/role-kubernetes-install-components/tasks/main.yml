@@ -1,0 +1,10 @@
+---
+# tasks file for role-kubernetes-install-components
+
+- name: Install Docker
+  ansible.builtin.include_tasks:
+    file: install_docker.yml
+
+- name: Install Kubernetes
+  ansible.builtin.include_tasks:
+    file: install_kubernetes.yml

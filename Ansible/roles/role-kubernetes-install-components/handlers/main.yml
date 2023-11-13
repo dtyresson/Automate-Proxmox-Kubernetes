@@ -1,0 +1,18 @@
+---
+# handlers file for role-kubernetes-install-components
+
+- name: restart docker
+  ansible.builtin.systemd:
+    name: docker.service
+    state: restarted
+
+
+- name: restart cri-docker
+  ansible.builtin.systemd:
+    name: cri-docker.service
+    state: restarted
+
+
+- name: daemon reload
+  ansible.builtin.systemd:
+    daemon_reload: true

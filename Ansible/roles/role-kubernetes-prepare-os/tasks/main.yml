@@ -1,0 +1,6 @@
+---
+# tasks file for role-kubernetes-prepare-os
+
+- name: Prepare OS
+  ansible.builtin.include_tasks:
+    file: prepare_os.yml

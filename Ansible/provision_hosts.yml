@@ -1,0 +1,16 @@
+---
+- hosts: localhost
+  name: Provision k8s infrastructure
+  vars:
+    terraform_dir: ../Terraform
+
+  tasks:
+    - name: Creating k8s VMs
+      community.general.terraform:
+        project_path: "{{ terraform_dir }}"
+        state: present
+      register: outputs
+
+    - name: Dump oututs
+      ansible.builtin.debug:
+        var=outputs

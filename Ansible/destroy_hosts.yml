@@ -1,0 +1,16 @@
+---
+- hosts: localhost
+  name: Destroy k8s infrastructure
+  vars:
+    terraform_dir: ../Terraform
+
+  tasks:
+    - name: Removing k8s VMs
+      community.general.terraform:
+        project_path: "{{ terraform_dir }}"
+        state: absent
+      register: outputs
+
+    - name: Dump oututs
+      ansible.builtin.debug:
+        var=outputs

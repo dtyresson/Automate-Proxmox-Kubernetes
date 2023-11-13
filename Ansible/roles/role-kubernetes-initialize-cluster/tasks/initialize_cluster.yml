@@ -1,0 +1,30 @@
+---
+
+- name: Reset Kubernetes component
+  ansible.builtin.command: "kubeadm reset --force --cri-socket unix:///var/run/cri-dockerd.sock"
+  register: reset_cluster
+  changed_when: "reset_cluster.rc == 0"
+
+
+- name: Initialize cluster
+  ansible.builtin.command: "kubeadm init --pod-network-cidr={{ pod_network_cidr }} --cri-socket unix:///var/run/cri-dockerd.sock"
+  register: result
+  changed_when: "result.rc == 0"
+  when: "reset_cluster is succeeded"
+
+
+- name: Run script to add kubeconfig
+  ansible.builtin.script: add_kubeconfig.sh
+
+
+- name: Get the token for joining the worker nodes
+  ansible.builtin.command: kubeadm token create --print-join-command
+  register: kubernetes_join_command
+  changed_when: false
+  failed_when: "kubernetes_join_command.rc != 0"
+
+# Use dummy host to store kubernetes join command as variable
+- name: "Add join command to hostvars"
+  ansible.builtin.add_host:
+    name: "k8s_dummy"
+    join_command: "{{ kubernetes_join_command.stdout }}"

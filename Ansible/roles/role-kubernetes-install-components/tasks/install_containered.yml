@@ -1,0 +1,20 @@
+---
+
+- name: Download and extract containered
+  ansible.builtin.unarchive:
+    src: "{{ containerd_archive_url }}"
+    dest: /usr/local/bin
+    remote_src: true
+
+- name: Download containerd service file
+  ansible.builtin.get_url:
+    url: https://raw.githubusercontent.com/containerd/containerd/main/containerd.service
+    dest: /etc/systemd/system/containered.service
+    mode: '0640'
+
+- name: Enable containered
+  ansible.builtin.systemd:
+    name: containered.service
+    state: started
+    enabled: true
+    daemon_reload: true

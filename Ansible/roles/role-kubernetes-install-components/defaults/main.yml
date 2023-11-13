@@ -1,0 +1,10 @@
+---
+# defaults file for role-kubernetes-install-components
+
+cri_dockerd_url: https://github.com/Mirantis/cri-dockerd/releases/download/v0.3.7/cri-dockerd_0.3.7.3-0.debian-bullseye_amd64.deb
+
+containerd_version: 1.7.8
+containerd_archive_url: https://github.com/containerd/containerd/releases/download/v{{ containerd_version }}/containerd-{{ containerd_version }}-linux-amd64.tar.gz
+
+kubernetes_version: 1.28
+kubernetes_key_url: https://pkgs.k8s.io/core:/stable:/v{{ kubernetes_version }}/deb/Release.key

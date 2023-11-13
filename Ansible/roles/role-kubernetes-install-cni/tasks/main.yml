@@ -1,0 +1,7 @@
+---
+# tasks file for role-kubernetes-install-cni
+
+
+- name: Install Calico
+  ansible.builtin.include_tasks:
+    file: install_calico.yml
