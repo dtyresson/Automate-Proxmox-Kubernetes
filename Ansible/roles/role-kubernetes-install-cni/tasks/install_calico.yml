@@ -1,28 +1,21 @@
 ---
 
-- name: Install Calico Operator.
-  block:
-    - name: Download Calico Operator manifest.
-      ansible.builtin.get_url:
-        url: "{{ calico_operator_manifest_url }}"
-        dest: /opt/kubernetes/calico/
+- name: Add Calico directory
+  ansible.builtin.file:
+      path: /opt/kubernetes/calico
+      state: directory
+      mode: '0755'
 
-    - name: Apply Calico Operator manifest.
-      kubernetes.core.k8s:
-        state: present
-        src: /opt/kubernetes/calico/tigera-operator.yaml
+- name: Download Calico operator manifest.
+  ansible.builtin.get_url:
+    url: "{{ calico_operator_manifest_url }}"
+    dest: /opt/kubernetes/calico/
+    mode: '644'
 
-- name: Install Calico.
-  block:
-    - name: Download Calico manifest.
-      ansible.builtin.get_url:
-        url: "{{ calico_manifest }}"
-        dest: /opt/kubernetes/calico/
-
-    - name: Apply Calico manifest.
-      kubernetes.core.k8s:
-        state: present
-        src: /opt/kubernetes/calico/custom-resources.yaml
+- name: Apply Calico operator manifest.
+  kubernetes.core.k8s:
+    state: present
+    src: /opt/kubernetes/calico/calico.yaml
 
 - name: Install calicoctl.
   ansible.builtin.get_url:

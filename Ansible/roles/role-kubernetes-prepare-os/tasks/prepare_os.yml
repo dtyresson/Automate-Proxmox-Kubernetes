@@ -3,11 +3,14 @@
 - name: Install dependencies
   ansible.builtin.apt:
     pkg:
+      - software-properties-common
       - apt-transport-https
       - ca-certificates
       - curl
       - gpg
       - gnupg
+      - gnupg2
+      - python3-pip
     state: latest
     update_cache: true
 
@@ -21,7 +24,7 @@
 
 - name: Load modules
   ansible.builtin.shell:
-    cmd: "modprobe {{ item }}" 
+    cmd: "modprobe {{ item }}"
     executable: /bin/bash
   changed_when: false
   loop:
@@ -48,7 +51,11 @@
   ansible.builtin.command: swapoff -a
 
 - name: Disable SWAP in fstab
-  replace:
+  ansible.builtin.replace:
     path: /etc/fstab
     regexp: '^([^#].*?\sswap\s+sw\s+.*)$'
     replace: '# \1'
+
+- name: Install kubernetes python package
+  ansible.builtin.pip:
+    name: kubernetes

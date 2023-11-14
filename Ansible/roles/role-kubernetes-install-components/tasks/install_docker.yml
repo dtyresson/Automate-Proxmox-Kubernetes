@@ -1,41 +1,52 @@
 ---
 
+- name: Add keyring directory
+  ansible.builtin.file:
+      path: /etc/apt/keyrings
+      state: directory
+      mode: '0755'
+
+
 - name: Add Docker repository
   block:
     - name: Docker repo | apt key
       ansible.builtin.apt_key:
         url: https://download.docker.com/linux/debian/gpg
-        keyring: /etc/apt/trusted.gpg.d/docker.gpg
+        keyring: /etc/apt/keyrings/docker.gpg
 
     - name: Docker repo | apt source
       ansible.builtin.apt_repository:
-        repo: "deb [arch=amd64 signed-by=/etc/apt/trusted.gpg.d/docker.gpg] https://download.docker.com/linux/debian {{ ansible_distribution_release }} stable"
+        repo: "deb [arch=amd64 signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/debian {{ ansible_distribution_release }} stable"
         state: present
         filename: docker
 
 
-- name: Install Docker components
+- name: Install Docker component containerd
   ansible.builtin.apt:
     pkg:
-      - docker-ce
-      - docker-ce-cli
       - containerd.io
-      - docker-buildx-plugin
     state: latest
     update_cache: true
 
+- name: Config containerd
+  block:
+    - name: Generate config file
+      ansible.builtin.shell:
+        cmd: containerd config default > /etc/containerd/config.toml
 
-- name: Install cri-dockerd .deb package from the internet
-  ansible.builtin.apt:
-    deb: "{{ cri_dockerd_url }}"
+    - name: Set SystemdCgroup
+      ansible.builtin.replace:
+        path: /etc/containerd/config.toml
+        regexp: '^\s+SystemdCgroup = false'
+        replace: '            SystemdCgroup = true'
 
+    - name: Set sandbox image
+      ansible.builtin.replace:
+        path: /etc/containerd/config.toml
+        regexp: '^\s+sandbox_image = \"registry\.k8s\.io/pause:3\.6\"'
+        replace: '    sandbox_image = "registry.k8s.io/pause:3.9"'
 
-- name: Ensure cri-dockerd use correct pause image
-  ansible.builtin.replace:
-    path: /lib/systemd/system/cri-docker.service
-    regexp: '^ExecStart='
-    replace: ExecStart=/usr/bin/cri-dockerd --container-runtime-endpoint fd:// --pod-infra-container-image registry.k8s.io/pause:3.9
-  notify:
-    - daemon reload
-    - restart cri-docker
-    - restart docker
+- name: Restart containerd
+  ansible.builtin.systemd:
+    name: containerd.service
+    state: restarted

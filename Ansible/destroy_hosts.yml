@@ -1,6 +1,8 @@
 ---
 - hosts: localhost
+  connection: local
   name: Destroy k8s infrastructure
+  gather_facts: false
   vars:
     terraform_dir: ../Terraform
 

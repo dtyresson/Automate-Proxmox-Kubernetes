@@ -22,6 +22,7 @@ resource "proxmox_vm_qemu" "proxmox_kubernetes_vms" {
   vmid       = var.vmid_range+count.index
   qemu_os    = "l26"
   tags       = "k8s"
+  searchdomain = var.nameserver_domain
 
   network {
     model  = "virtio"
@@ -56,8 +57,8 @@ resource "proxmox_vm_qemu" "proxmox_kubernetes_vms" {
 data "template_file" "k8s" {
   template = file("./templates/k8s-hosts.tpl")
   vars = {
-    k8s_master = "${join("", [proxmox_vm_qemu.proxmox_kubernetes_vms[0].instance.name, " ansible_host=", proxmox_vm_qemu.proxmox_kubernetes_vms[0].instance.default_ipv4_address])}"
-    k8s_workers = "${join("\n", [for instance in proxmox_vm_qemu.proxmox_kubernetes_vms[1:] : join("", [instance.name, " ansible_host=", instance.default_ipv4_address])])}"
+    k8s_master = "${join("", [element(proxmox_vm_qemu.proxmox_kubernetes_vms, 0).name, " ansible_host=", element(proxmox_vm_qemu.proxmox_kubernetes_vms, 0).default_ipv4_address])}"
+    k8s_workers = "${join("\n", [for instance in slice(proxmox_vm_qemu.proxmox_kubernetes_vms, 1, length(proxmox_vm_qemu.proxmox_kubernetes_vms)) : join("", [instance.name, " ansible_host=", instance.default_ipv4_address])])}"
   }
 }
 
@@ -66,6 +67,6 @@ resource "local_file" "k8s_file" {
   filename = "../Ansible/k8s-hosts"
 }
 
-output "Host IPs" {
+output "host_ips" {
   value = ["${proxmox_vm_qemu.proxmox_kubernetes_vms.*.default_ipv4_address}"]
 }

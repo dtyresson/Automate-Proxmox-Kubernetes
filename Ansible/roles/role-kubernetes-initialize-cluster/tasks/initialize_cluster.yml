@@ -1,13 +1,13 @@
 ---
 
 - name: Reset Kubernetes component
-  ansible.builtin.command: "kubeadm reset --force --cri-socket unix:///var/run/cri-dockerd.sock"
+  ansible.builtin.command: "kubeadm reset --force "
   register: reset_cluster
   changed_when: "reset_cluster.rc == 0"
 
 
 - name: Initialize cluster
-  ansible.builtin.command: "kubeadm init --pod-network-cidr={{ pod_network_cidr }} --cri-socket unix:///var/run/cri-dockerd.sock"
+  ansible.builtin.command: "kubeadm init --pod-network-cidr={{ pod_network_cidr }}"
   register: result
   changed_when: "result.rc == 0"
   when: "reset_cluster is succeeded"

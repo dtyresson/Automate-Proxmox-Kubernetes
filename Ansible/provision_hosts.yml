@@ -1,13 +1,28 @@
 ---
 - hosts: localhost
+  connection: local
   name: Provision k8s infrastructure
+  gather_facts: false
   vars:
-    terraform_dir: ../Terraform
+    terraform_dir: "../Terraform"
 
   tasks:
-    - name: Creating k8s VMs
+    - name: Creating k8s VMs Terraform plan
       community.general.terraform:
         project_path: "{{ terraform_dir }}"
+        state: planned
+        plan_file: "{{ terraform_dir }}/k8s_hosts.tfplan"
+        force_init: true
+
+    - name: Confirm terraform plan is present
+      ansible.builtin.wait_for:
+        path: "{{ terraform_dir }}/k8s_hosts.tfplan"
+        state: present
+
+    - name: Apply terraform plan
+      community.general.terraform:
+        project_path: "{{ terraform_dir }}"
+        plan_file: "{{ terraform_dir }}/k8s_hosts.tfplan"
         state: present
       register: outputs
 
