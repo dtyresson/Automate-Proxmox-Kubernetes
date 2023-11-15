@@ -2,7 +2,9 @@
 
 ## Overview
 
-This project provides infrastructure-as-code (IaC) scripts using Terraform and Ansible to automate the deployment and installation of a Kubernetes cluster on Proxmox Virtualization Environment.
+This project provides infrastructure-as-code (IaC) scripts using Terraform and Ansible to automate the deployment and installation of a Kubernetes cluster on Proxmox Virtualization Environment. The playbook deploys virtual machines (VMs) to a single host, which makes it compatible with single node environments. In a clustered environment, the VMs can then be distrbiuted manually by the user.
+
+The Kubernetes installation includes Docker containerd.io as container runtime and Calico Operator as CNI.
 
 ## Prerequisites
 
@@ -23,8 +25,8 @@ pveum aclmod / -user terraform-user@pve -role Provisioner
 
 ## Configuration
 
-- Adjust Provider credential variables in Terraform/proxmox_credentials.tfvars
-- Customize installation in Terraform/k8s_hosts_vars.tfvars
+- Adjust Provider credential variables in Terraform/proxmox_credentials.auto.tfvars
+- Customize installation in Terraform/k8s_hosts_vars.vars
 - If needed, override Ansible default variables in Ansible/vars.yml
 
 ## Usage
@@ -44,7 +46,9 @@ ansible-playbook install_cluster.yml
 ## Directory Structure
 
 ```plaintext
+.
 ├── Ansible
+│   ├── ansible.cfg
 │   ├── destroy_hosts.yml
 │   ├── install_cluster.yml
 │   ├── provision_hosts.yml
@@ -95,10 +99,10 @@ ansible-playbook install_cluster.yml
 ├── LICENSE
 ├── README.md
 └── Terraform
-    ├── k8s_hosts_vars.tfvars
+    ├── k8s_hosts_vars.tf
     ├── main.tf
     ├── provider.tf
-    ├── proxmox_credentials.tfvars
+    ├── proxmox_credentials.auto.tfvars
     └── templates
         └── k8s-hosts.tpl
 ```
